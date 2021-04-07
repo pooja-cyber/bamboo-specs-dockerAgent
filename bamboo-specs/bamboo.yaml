@@ -1,9 +1,9 @@
 ---
 version: 2
 plan:
-  project-key: P2
-  key: PLAN2
-  name: plan2
+  project-key: EKS
+  key: PLAN1
+  name: plan1
 stages:
 - Default Stage:
     manual: false
@@ -13,25 +13,28 @@ stages:
 Default Job:
   key: JOB1
   docker:
-    image: python:alpine3.12
+    image: thetupakula/alpine3.12
     volumes:
       ${bamboo.working.directory}: ${bamboo.working.directory}
       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-      /root/eks/scripts: /root/eks/scripts
     docker-run-arguments: []
   tasks:
-# Checkout Task will be added implicitly during Specs import
+  - checkout:
+      force-clean-build: 'false'
   - script:
       interpreter: SHELL
       scripts:
       - |-
-        cd /root/eks/scripts
+        cd eks/scripts
         wget -q https://s3-us-west-2.amazonaws.com/rafay-prod-cli/publish/rctl-linux-amd64.tar.bz2
         tar -xf rctl-linux-amd64.tar.bz2
         chmod 0755 rctl
         chmod +x rafay_eks_provision.sh
         ./rafay_eks_provision.sh
-triggers: []
+      environment: RCTL_API_KEY="rafay_api_key", RCTL_API_SECRET="rafay_secret_key", RCTL_REST_ENDPOINT="console.rafay.dev", RCTL_PROJECT="defaultproject"
+triggers:
+- polling:
+    period: '180'
 branches:
   create: manually
   delete: never
@@ -43,7 +46,7 @@ other:
 ---
 version: 2
 plan:
-  key: P2-PLAN2
+  key: EKS-PLAN1
 plan-permissions:
 - users:
   - root
