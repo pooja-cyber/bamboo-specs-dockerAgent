@@ -1,0 +1,56 @@
+---
+version: 2
+plan:
+  project-key: P2
+  key: PLAN2
+  name: plan2
+stages:
+- Default Stage:
+    manual: false
+    final: false
+    jobs:
+    - Default Job
+Default Job:
+  key: JOB1
+  docker:
+    image: python:alpine3.12
+    volumes:
+      ${bamboo.working.directory}: ${bamboo.working.directory}
+      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+      /root/eks/scripts: /root/eks/scripts
+    docker-run-arguments: []
+  tasks:
+# Checkout Task will be added implicitly during Specs import
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-
+        cd /root/eks/scripts
+        wget -q https://s3-us-west-2.amazonaws.com/rafay-prod-cli/publish/rctl-linux-amd64.tar.bz2
+        tar -xf rctl-linux-amd64.tar.bz2
+        chmod 0755 rctl
+        chmod +x rafay_eks_provision.sh
+        ./rafay_eks_provision.sh
+triggers: []
+branches:
+  create: manually
+  delete: never
+  link-to-jira: true
+notifications: []
+labels: []
+other:
+  concurrent-build-plugin: system-default
+---
+version: 2
+plan:
+  key: P2-PLAN2
+plan-permissions:
+- users:
+  - root
+  permissions:
+  - view
+  - edit
+  - build
+  - clone
+  - admin
+...
